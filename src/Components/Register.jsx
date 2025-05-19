@@ -11,26 +11,31 @@ const Register = () => {
     // const password = form.password.value;
 
     const formData = new FormData(form);
-    const { email, password, ...userprofile } = Object.fromEntries(
-      formData.entries()
-    );
+    const { email, password, ...rest } = Object.fromEntries(formData.entries());
 
-    console.log(userprofile);
+    // console.log(userprofile);
     createUser(email, password)
       .then((result) => {
+        const userprofile = {
+          email,
+          ...rest,
+          creationTime: result.user?.metadata.creationTime,
+          lastSignInTime: result.user?.metadata.lastSignInTime,
+        };
+
         // Creating User Info to DB
         fetch("http://localhost:5000/users", {
           method: "POST",
           headers: {
             "content-type": "application/json",
           },
-          body: JSON.stringify(userprofile, email),
+          body: JSON.stringify(userprofile),
         })
           .then((res) => res.json())
           .then((data) => {
             if (data.insertedId) {
               toast.success(
-                "🎉 Welcome! Your account has been created successfully."
+                " Welcome! Your account has been created successfully."
               );
             } else {
               toast.error("🚫 Registration failed. Please try again.");
